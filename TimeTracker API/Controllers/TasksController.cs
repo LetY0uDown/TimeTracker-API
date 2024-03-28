@@ -102,7 +102,7 @@ public sealed class TasksController (TimeTrackerContext db) : ControllerBase
 
         return Ok();
     }
-
+    
     [HttpGet("{id:int}/intervals")]
     public async Task<ActionResult<List<Interval>>> GetIntervalsForTask ([FromRoute] int id)
     {
