@@ -1,4 +1,4 @@
-using TimeTracker.API.Database;
+using TimeTracker.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 

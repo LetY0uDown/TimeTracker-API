@@ -1,4 +1,4 @@
-﻿namespace TimeTracker.API.Database.Models;
+﻿namespace TimeTracker.Database.Models;
 
 public class Interval
 {
@@ -6,9 +6,9 @@ public class Interval
 
     public int TaskId { get; set; }
 
-    public TimeOnly WorkingTime { get; set; }
+    public long WorkingTime { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
-    public TrackedTask? Task { get; set; }
+    public TrackedTask? Task { get; set; } = null;
 }
