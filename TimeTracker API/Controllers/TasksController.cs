@@ -26,6 +26,7 @@ public sealed class TasksController (TimeTrackerContext db) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Task>> PostTask ([FromBody] Task task)
     {
+        task.IsPaused = true;
         await _db.Tasks.AddAsync(task);
         await _db.SaveChangesAsync();
 
@@ -40,9 +41,15 @@ public sealed class TasksController (TimeTrackerContext db) : ControllerBase
             return NotFound("Задание не найдено");
         }
 
-        task.StartedAt = DateTime.Now;
+        task.IsPaused = false;
         _db.Entry(task).State = EntityState.Modified;
 
+        var Timestamp = new Timestamp {
+            TaskId = task.Id,
+            TypeId = 1,
+            CreatedAt = DateTime.Now.Ticks
+        };
+        await _db.Timestamps.AddAsync(Timestamp);
         await _db.SaveChangesAsync();
 
         return Ok();
@@ -58,6 +65,14 @@ public sealed class TasksController (TimeTrackerContext db) : ControllerBase
 
         task.IsPaused = false;
         _db.Entry(task).State = EntityState.Modified;
+
+        var Timestamp = new Timestamp {
+            TaskId = task.Id,
+            TypeId = 3,
+            CreatedAt = DateTime.Now.Ticks
+        };
+
+        await _db.Timestamps.AddAsync(Timestamp);
         await _db.SaveChangesAsync();
 
         return Ok();
@@ -76,13 +91,13 @@ public sealed class TasksController (TimeTrackerContext db) : ControllerBase
 
         var now = DateTime.Now;
 
-        var interval = new Interval {
+        var Timestamp = new Timestamp {
             TaskId = task.Id,
-            WorkingTime = (now - task.StartedAt)!.Value.Ticks,
-            CreatedAt = now
+            TypeId = 2,
+            CreatedAt = now.Ticks
         };
 
-        await _db.Intervals.AddAsync(interval);
+        await _db.Timestamps.AddAsync(Timestamp);
         await _db.SaveChangesAsync();
 
         return Ok();
@@ -97,15 +112,24 @@ public sealed class TasksController (TimeTrackerContext db) : ControllerBase
         }
 
         task.IsDone = true;
+        task.IsPaused = true;
         _db.Entry(task).State = EntityState.Modified;
+
+        var Timestamp = new Timestamp {
+            TaskId = task.Id,
+            TypeId = 4,
+            CreatedAt = DateTime.Now.Ticks
+        };
+
+        await _db.Timestamps.AddAsync(Timestamp);
         await _db.SaveChangesAsync();
 
         return Ok();
     }
     
-    [HttpGet("{id:int}/intervals")]
-    public async Task<ActionResult<List<Interval>>> GetIntervalsForTask ([FromRoute] int id)
+    [HttpGet("{id:int}/timestamps")]
+    public async Task<ActionResult<List<Timestamp>>> GetTimestampsForTask ([FromRoute] int id)
     {
-        return await _db.Intervals.Where(i => i.TaskId == id).ToListAsync();
+        return await _db.Timestamps.Include(ts => ts.Type).Where(ts => ts.TaskId == id).ToListAsync();
     }
 }
