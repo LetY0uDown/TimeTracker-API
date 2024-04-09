@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeTracker API", "TimeTracker API\TimeTracker API.csproj", "{781AF8C6-E465-4C9D-8ED7-4F6FA34E4276}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTracker Database", "TimeTracker Database\TimeTracker Database.csproj", "{8981AA8A-ACCB-4914-B571-BC5F5828056D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeTracker Database", "TimeTracker Database\TimeTracker Database.csproj", "{8981AA8A-ACCB-4914-B571-BC5F5828056D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -14,7 +14,7 @@ public sealed partial class TimeTrackerContext : DbContext
         Database.EnsureCreated();
     }
 
-    public DbSet<TimestampType> IntervalTypes { get; set; }
+    public DbSet<TimestampType> TimestampTypes { get; set; }
 
     public DbSet<TrackedTask> Tasks { get; set; }
 
@@ -26,9 +26,9 @@ public sealed partial class TimeTrackerContext : DbContext
     protected override void OnModelCreating (ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<TimestampType>(entity => {
-            entity.HasKey(e => e.Id).HasName("IntervalType_pkey");
+            entity.HasKey(e => e.Id).HasName("TimestampType_pkey");
 
-            entity.ToTable("IntervalType");
+            entity.ToTable("TimestampType");
 
             entity.Property(e => e.Id)
                   .ValueGeneratedNever()
@@ -59,7 +59,7 @@ public sealed partial class TimeTrackerContext : DbContext
             entity.HasOne(d => d.Task).WithMany(p => p.Timestamps)
                   .HasForeignKey(d => d.TaskId)
                   .HasConstraintName("TaskID");
-
+            
             entity.HasOne(d => d.Type).WithMany(p => p.Timestamps)
                   .HasForeignKey(d => d.TypeId)
                   .OnDelete(DeleteBehavior.SetNull)

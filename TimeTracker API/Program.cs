@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
-using TimeTracker.Database;
+using TimeTracker.API.Services;
+using TimeTracker.API.Tools;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,9 +8,10 @@ builder.Services.AddControllers().AddJsonOptions(options => {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSignalR();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<TimeTrackerContext>();
+builder.Services.AddDatabase();
 
 var app = builder.Build();
 
@@ -21,5 +23,7 @@ if (app.Environment.IsDevelopment()) {
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapHub<MainHub>("MainHub");
 
 app.Run();

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using TimeTracker.API.Services;
 using TimeTracker.Database;
 using TimeTracker.Database.Models;
 using Task = TimeTracker.Database.Models.TrackedTask;
@@ -7,9 +9,14 @@ using Task = TimeTracker.Database.Models.TrackedTask;
 namespace TimeTracker.API.Controllers;
 
 [ApiController, Route("[controller]/")]
-public sealed class TasksController (TimeTrackerContext db) : ControllerBase
+public sealed class TasksController (TimeTrackerContext db, IHubContext<MainHub> hub,
+                                     TaskRepository taskRepository,
+                                     TimestampRepository timestampRepository) : ControllerBase
 {
     private readonly TimeTrackerContext _db = db;
+    private readonly IHubContext<MainHub> _hub = hub;
+    private readonly TaskRepository _taskRepository = taskRepository;
+    private readonly TimestampRepository _timestampRepository = timestampRepository;
 
     [HttpGet]
     public async Task<ActionResult<List<Task>>> GetActiveTasks ()
@@ -24,33 +31,25 @@ public sealed class TasksController (TimeTrackerContext db) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Task>> PostTask ([FromBody] Task task)
+    public async Task<ActionResult> PostTask ([FromBody] Task task)
     {
-        task.IsPaused = true;
-        await _db.Tasks.AddAsync(task);
-        await _db.SaveChangesAsync();
+        await _taskRepository.AddAsync(task);
 
-        return CreatedAtAction("PostTask", task);
+        await _hub.Clients.All.SendAsync("TaskPosted", task);
+
+        return Ok();
     }
 
     [HttpPut("{id:int}/start")]
     public async Task<ActionResult> StartTask ([FromRoute] int id)
     {
-        var task = await _db.Tasks.FirstOrDefaultAsync(task => task.Id == id);
-        if (task is null) {
-            return NotFound("Задание не найдено");
-        }
-
-        task.IsPaused = false;
-        _db.Entry(task).State = EntityState.Modified;
-
-        var Timestamp = new Timestamp {
-            TaskId = task.Id,
+        var timestamp = await _timestampRepository.AddAsync(new Timestamp {
+            TaskId = id,
             TypeId = 1,
             CreatedAt = DateTime.Now.Ticks
-        };
-        await _db.Timestamps.AddAsync(Timestamp);
-        await _db.SaveChangesAsync();
+        });
+
+        await _hub.Clients.All.SendAsync("TaskStateUpdated", timestamp);
 
         return Ok();
     }
@@ -58,22 +57,13 @@ public sealed class TasksController (TimeTrackerContext db) : ControllerBase
     [HttpPut("{id:int}/resume")]
     public async Task<ActionResult> ResumeTask ([FromRoute] int id)
     {
-        var task = await _db.Tasks.FirstOrDefaultAsync(task => task.Id == id);
-        if (task is null) {
-            return NotFound("Задание не найдено");
-        }
-
-        task.IsPaused = false;
-        _db.Entry(task).State = EntityState.Modified;
-
-        var Timestamp = new Timestamp {
-            TaskId = task.Id,
+        var timestamp = await _timestampRepository.AddAsync(new Timestamp {
+            TaskId = id,
             TypeId = 3,
             CreatedAt = DateTime.Now.Ticks
-        };
+        });
 
-        await _db.Timestamps.AddAsync(Timestamp);
-        await _db.SaveChangesAsync();
+        await _hub.Clients.All.SendAsync("TaskStateUpdated", timestamp);
 
         return Ok();
     }
@@ -81,24 +71,13 @@ public sealed class TasksController (TimeTrackerContext db) : ControllerBase
     [HttpPut("{id:int}/pause")]
     public async Task<ActionResult> PauseTask ([FromRoute] int id)
     {
-        var task = await _db.Tasks.FirstOrDefaultAsync(task => task.Id == id);
-        if (task is null) {
-            return NotFound("Задание не найдено");
-        }
-
-        task.IsPaused = true;
-        _db.Entry(task).State = EntityState.Modified;
-
-        var now = DateTime.Now;
-
-        var Timestamp = new Timestamp {
-            TaskId = task.Id,
+        var timestamp = await _timestampRepository.AddAsync(new Timestamp {
+            TaskId = id,
             TypeId = 2,
-            CreatedAt = now.Ticks
-        };
+            CreatedAt = DateTime.Now.Ticks
+        });
 
-        await _db.Timestamps.AddAsync(Timestamp);
-        await _db.SaveChangesAsync();
+        await _hub.Clients.All.SendAsync("TaskStateUpdated", timestamp);
 
         return Ok();
     }
@@ -112,17 +91,15 @@ public sealed class TasksController (TimeTrackerContext db) : ControllerBase
         }
 
         task.IsDone = true;
-        task.IsPaused = true;
         _db.Entry(task).State = EntityState.Modified;
 
-        var Timestamp = new Timestamp {
-            TaskId = task.Id,
+        var timestamp = await _timestampRepository.AddAsync(new Timestamp {
+            TaskId = id,
             TypeId = 4,
             CreatedAt = DateTime.Now.Ticks
-        };
+        });
 
-        await _db.Timestamps.AddAsync(Timestamp);
-        await _db.SaveChangesAsync();
+        await _hub.Clients.All.SendAsync("TaskStateUpdated", timestamp);
 
         return Ok();
     }

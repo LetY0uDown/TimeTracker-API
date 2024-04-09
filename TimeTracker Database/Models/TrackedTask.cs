@@ -12,7 +12,5 @@ public class TrackedTask
 
     public bool IsDone { get; set; }
 
-    public bool IsPaused { get; set; }
-
     public ICollection<Timestamp> Timestamps { get; set; } = new List<Timestamp>();
 }
