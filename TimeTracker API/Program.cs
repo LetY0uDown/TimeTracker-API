@@ -12,6 +12,7 @@ builder.Services.AddSignalR();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDatabase();
+builder.Services.AddServices();
 
 var app = builder.Build();
 

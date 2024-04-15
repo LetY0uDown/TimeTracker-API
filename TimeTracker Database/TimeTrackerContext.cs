@@ -14,21 +14,21 @@ public sealed partial class TimeTrackerContext : DbContext
         Database.EnsureCreated();
     }
 
-    public DbSet<TimestampType> TimestampTypes { get; set; }
+    public DbSet<TaskActionType> TaskActionTypes { get; set; }
 
     public DbSet<TrackedTask> Tasks { get; set; }
 
-    public DbSet<Timestamp> Timestamps { get; set; }
+    public DbSet<TaskAction> TaskActions { get; set; }
 
     protected override void OnConfiguring (DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseNpgsql(_config["ConnectionStrings:Default"]);
 
     protected override void OnModelCreating (ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<TimestampType>(entity => {
-            entity.HasKey(e => e.Id).HasName("TimestampType_pkey");
+        modelBuilder.Entity<TaskActionType>(entity => {
+            entity.HasKey(e => e.Id).HasName("TaskActionType_pkey");
 
-            entity.ToTable("TimestampType");
+            entity.ToTable("TaskActionType");
 
             entity.Property(e => e.Id)
                   .ValueGeneratedNever()
@@ -45,10 +45,10 @@ public sealed partial class TimeTrackerContext : DbContext
                   .HasColumnName("ID");
         });
 
-        modelBuilder.Entity<Timestamp>(entity => {
-            entity.HasKey(e => e.Id).HasName("Timestamp_pkey");
+        modelBuilder.Entity<TaskAction>(entity => {
+            entity.HasKey(e => e.Id).HasName("TaskAction_pkey");
 
-            entity.ToTable("Timestamp");
+            entity.ToTable("TaskAction");
 
             entity.Property(e => e.Id)
                   .ValueGeneratedNever()
@@ -56,11 +56,11 @@ public sealed partial class TimeTrackerContext : DbContext
             entity.Property(e => e.TaskId).HasColumnName("TaskID");
             entity.Property(e => e.TypeId).HasColumnName("TypeID");
 
-            entity.HasOne(d => d.Task).WithMany(p => p.Timestamps)
+            entity.HasOne(d => d.Task).WithMany(p => p.Actions)
                   .HasForeignKey(d => d.TaskId)
                   .HasConstraintName("TaskID");
             
-            entity.HasOne(d => d.Type).WithMany(p => p.Timestamps)
+            entity.HasOne(d => d.Type).WithMany(p => p.Actions)
                   .HasForeignKey(d => d.TypeId)
                   .OnDelete(DeleteBehavior.SetNull)
                   .HasConstraintName("TypeID");

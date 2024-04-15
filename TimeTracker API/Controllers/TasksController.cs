@@ -1,41 +1,34 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using TimeTracker.API.Services;
-using TimeTracker.Database;
 using TimeTracker.Database.Models;
-using Task = TimeTracker.Database.Models.TrackedTask;
 
 namespace TimeTracker.API.Controllers;
 
 [ApiController, Route("[controller]/")]
-public sealed class TasksController (TimeTrackerContext db, IHubContext<MainHub> hub,
-                                     TaskRepository taskRepository,
-                                     TimestampRepository timestampRepository) : ControllerBase
+public sealed class TasksController (HubMessanger hub, TaskRepository taskRepository,
+                                     TaskActionRepository actionsRepository) : ControllerBase
 {
-    private readonly TimeTrackerContext _db = db;
-    private readonly IHubContext<MainHub> _hub = hub;
+    private readonly HubMessanger _hub = hub;
     private readonly TaskRepository _taskRepository = taskRepository;
-    private readonly TimestampRepository _timestampRepository = timestampRepository;
+    private readonly TaskActionRepository _actionsRepository = actionsRepository;
 
     [HttpGet]
-    public async Task<ActionResult<List<Task>>> GetActiveTasks ()
+    public ActionResult<List<TrackedTask>> GetActiveTasks ()
     {
-        return await _db.Tasks.Where(task => !task.IsDone).ToListAsync();
+        return _taskRepository.Where(task => !task.IsDone).ToList();
     }
 
     [HttpGet("Done")]
-    public async Task<ActionResult<List<Task>>> GetFinishedTasks ()
+    public ActionResult<List<TrackedTask>> GetFinishedTasks ()
     {
-        return await _db.Tasks.Where(task => task.IsDone).ToListAsync();
+        return _taskRepository.Where(task => task.IsDone).ToList();
     }
 
     [HttpPost]
-    public async Task<ActionResult> PostTask ([FromBody] Task task)
+    public async Task<ActionResult> PostTask ([FromBody] TrackedTask task)
     {
         await _taskRepository.AddAsync(task);
-
-        await _hub.Clients.All.SendAsync("TaskPosted", task);
+        await _hub.TaskCreatedAsync(task);
 
         return Ok();
     }
@@ -43,13 +36,13 @@ public sealed class TasksController (TimeTrackerContext db, IHubContext<MainHub>
     [HttpPut("{id:int}/start")]
     public async Task<ActionResult> StartTask ([FromRoute] int id)
     {
-        var timestamp = await _timestampRepository.AddAsync(new Timestamp {
+        var action = await _actionsRepository.AddAsync(new TaskAction {
             TaskId = id,
-            TypeId = 1,
+            TypeId = TaskActionType.Kind.Start,
             CreatedAt = DateTime.Now.Ticks
         });
 
-        await _hub.Clients.All.SendAsync("TaskStateUpdated", timestamp);
+        await _hub.TaskUpdatedAsync(action);
 
         return Ok();
     }
@@ -57,13 +50,13 @@ public sealed class TasksController (TimeTrackerContext db, IHubContext<MainHub>
     [HttpPut("{id:int}/resume")]
     public async Task<ActionResult> ResumeTask ([FromRoute] int id)
     {
-        var timestamp = await _timestampRepository.AddAsync(new Timestamp {
+        var action = await _actionsRepository.AddAsync(new TaskAction {
             TaskId = id,
-            TypeId = 3,
+            TypeId = TaskActionType.Kind.Resume,
             CreatedAt = DateTime.Now.Ticks
         });
 
-        await _hub.Clients.All.SendAsync("TaskStateUpdated", timestamp);
+        await _hub.TaskUpdatedAsync(action);
 
         return Ok();
     }
@@ -71,13 +64,13 @@ public sealed class TasksController (TimeTrackerContext db, IHubContext<MainHub>
     [HttpPut("{id:int}/pause")]
     public async Task<ActionResult> PauseTask ([FromRoute] int id)
     {
-        var timestamp = await _timestampRepository.AddAsync(new Timestamp {
+        var action = await _actionsRepository.AddAsync(new TaskAction {
             TaskId = id,
-            TypeId = 2,
+            TypeId = TaskActionType.Kind.Pause,
             CreatedAt = DateTime.Now.Ticks
         });
 
-        await _hub.Clients.All.SendAsync("TaskStateUpdated", timestamp);
+        await _hub.TaskUpdatedAsync(action);
 
         return Ok();
     }
@@ -85,28 +78,28 @@ public sealed class TasksController (TimeTrackerContext db, IHubContext<MainHub>
     [HttpPut("{id:int}/finish")]
     public async Task<ActionResult> FinishTask ([FromRoute] int id)
     {
-        var task = await _db.Tasks.FirstOrDefaultAsync(task => task.Id == id);
+        var task = await _taskRepository.GetByIDAsync(id);
         if (task is null) {
             return NotFound("Задание не найдено");
         }
 
         task.IsDone = true;
-        _db.Entry(task).State = EntityState.Modified;
+        await _taskRepository.UpdateAsync(task);
 
-        var timestamp = await _timestampRepository.AddAsync(new Timestamp {
+        var action = await _actionsRepository.AddAsync(new TaskAction {
             TaskId = id,
-            TypeId = 4,
+            TypeId = TaskActionType.Kind.Finish,
             CreatedAt = DateTime.Now.Ticks
         });
 
-        await _hub.Clients.All.SendAsync("TaskStateUpdated", timestamp);
+        await _hub.TaskUpdatedAsync(action);
 
         return Ok();
     }
-    
-    [HttpGet("{id:int}/timestamps")]
-    public async Task<ActionResult<List<Timestamp>>> GetTimestampsForTask ([FromRoute] int id)
+
+    [HttpGet("{id:int}/actions")]
+    public ActionResult<List<TaskAction>> GetactionsForTask ([FromRoute] int id)
     {
-        return await _db.Timestamps.Include(ts => ts.Type).Where(ts => ts.TaskId == id).ToListAsync();
+        return _actionsRepository.Where(action => action.TaskId == id).ToList();
     }
 }

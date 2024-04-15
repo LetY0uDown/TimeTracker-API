@@ -2,7 +2,4 @@
 
 namespace TimeTracker.API.Services;
 
-public sealed class MainHub : Hub
-{
-
-}
+public sealed class MainHub : Hub { }

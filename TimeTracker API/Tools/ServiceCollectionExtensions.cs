@@ -10,7 +10,14 @@ internal static class ServiceCollectionExtensions
         services.AddDbContext<TimeTrackerContext>();
 
         services.AddScoped<TaskRepository>();
-        services.AddScoped<TimestampRepository>();
+        services.AddScoped<TaskActionRepository>();
+
+        return services;
+    }
+
+    internal static IServiceCollection AddServices (this IServiceCollection services)
+    {
+        services.AddTransient<HubMessanger>();
 
         return services;
     }

@@ -45,68 +45,68 @@ public sealed partial class TimeTrackerContext : DbContext
             ]);
         });
 
-        modelBuilder.Entity<TimestampType>(entity => {
+        modelBuilder.Entity<TaskActionType>(entity => {
             entity.HasData([
-                new TimestampType {
-                    Id = 1,
+                new TaskActionType {
+                    Id = TaskActionType.Kind.Start,
                     Title = "Начало"
                 },
-                new TimestampType {
-                    Id = 2,
+                new TaskActionType {
+                    Id = TaskActionType.Kind.Pause,
                     Title = "Пауза"
                 },
-                new TimestampType {
-                    Id = 3,
+                new TaskActionType {
+                    Id = TaskActionType.Kind.Resume,
                     Title = "Продолжение"
                 },
-                new TimestampType {
-                    Id = 4,
+                new TaskActionType {
+                    Id = TaskActionType.Kind.Finish,
                     Title = "Завершение"
                 },
             ]);
         });
 
-        modelBuilder.Entity<Timestamp>(entity => {
+        modelBuilder.Entity<TaskAction>(entity => {
             entity.HasData([
-                new Timestamp {
+                new TaskAction {
                     Id = 1,
                     TaskId = 4,
-                    TypeId = 1,
+                    TypeId = TaskActionType.Kind.Start,
                     CreatedAt = new DateTime(2024, 3, 28, 12, 30, 0).Ticks
                 },
 
-                new Timestamp {
+                new TaskAction {
                     Id = 2,
                     TaskId = 4,
-                    TypeId = 4,
+                    TypeId = TaskActionType.Kind.Finish,
                     CreatedAt = new DateTime(2024, 3, 28, 14, 30, 0).Ticks
                 },
 
-                new Timestamp {
+                new TaskAction {
                     Id = 3,
                     TaskId = 5,
-                    TypeId = 1,
+                    TypeId = TaskActionType.Kind.Start,
                     CreatedAt = new DateTime(2000, 10, 8, 16, 0, 0).Ticks
                 },
 
-                new Timestamp {
+                new TaskAction {
                     Id = 4,
                     TaskId = 5,
-                    TypeId = 2,
+                    TypeId = TaskActionType.Kind.Pause,
                     CreatedAt = new DateTime(2000, 10, 8, 16, 20, 0).Ticks
                 },
 
-                new Timestamp {
+                new TaskAction {
                     Id = 5,
                     TaskId = 5,
-                    TypeId = 3,
+                    TypeId = TaskActionType.Kind.Resume,
                     CreatedAt = new DateTime(2000, 10, 8, 16, 30, 0).Ticks
                 },
 
-                new Timestamp {
+                new TaskAction {
                     Id = 6,
                     TaskId = 5,
-                    TypeId = 4,
+                    TypeId = TaskActionType.Kind.Finish,
                     CreatedAt = new DateTime(2000, 10, 8, 16, 35, 0).Ticks
                 }
             ]);

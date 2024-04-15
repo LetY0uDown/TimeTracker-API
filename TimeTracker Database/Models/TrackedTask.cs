@@ -12,5 +12,5 @@ public class TrackedTask
 
     public bool IsDone { get; set; }
 
-    public ICollection<Timestamp> Timestamps { get; set; } = new List<Timestamp>();
+    public ICollection<TaskAction> Actions { get; set; } = new List<TaskAction>();
 }
