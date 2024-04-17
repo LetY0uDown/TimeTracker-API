@@ -1,16 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TimeTracker.API.Services;
 using TimeTracker.Database.Models;
+using TimeTracker.Database.Services;
 
 namespace TimeTracker.API.Controllers;
 
 [ApiController, Route("[controller]/")]
-public sealed class TasksController (HubMessanger hub, TaskRepository taskRepository,
-                                     TaskActionRepository actionsRepository) : ControllerBase
+public sealed class TasksController (HubMessanger hub,
+                                     IRepository<TrackedTask> taskRepository,
+                                     IRepository<TaskAction> actionsRepository) : ControllerBase
 {
     private readonly HubMessanger _hub = hub;
-    private readonly TaskRepository _taskRepository = taskRepository;
-    private readonly TaskActionRepository _actionsRepository = actionsRepository;
+
+    private readonly IRepository<TrackedTask> _taskRepository    = taskRepository;
+    private readonly IRepository<TaskAction>  _actionsRepository = actionsRepository;
 
     [HttpGet]
     public ActionResult<List<TrackedTask>> GetActiveTasks ()

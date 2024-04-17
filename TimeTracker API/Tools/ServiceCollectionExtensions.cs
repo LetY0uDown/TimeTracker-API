@@ -1,5 +1,7 @@
 ﻿using TimeTracker.API.Services;
 using TimeTracker.Database;
+using TimeTracker.Database.Models;
+using TimeTracker.Database.Services;
 
 namespace TimeTracker.API.Tools;
 
@@ -9,8 +11,8 @@ internal static class ServiceCollectionExtensions
     {
         services.AddDbContext<TimeTrackerContext>();
 
-        services.AddScoped<TaskRepository>();
-        services.AddScoped<TaskActionRepository>();
+        services.AddScoped<IRepository<TrackedTask>, TaskRepository>();
+        services.AddScoped<IRepository<TaskAction>, TaskActionRepository>();
 
         return services;
     }
