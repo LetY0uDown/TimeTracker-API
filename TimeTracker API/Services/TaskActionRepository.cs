@@ -19,7 +19,7 @@ public class TaskActionRepository (TimeTrackerContext db) : IRepository<TaskActi
 
     public Task<TaskAction?> GetByIDAsync (int id)
     {
-        return _db.TaskActions.FirstOrDefaultAsync(a => a.Id == id);
+        return _db.TaskActions.Include(action => action.Type).FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task UpdateAsync (TaskAction entity)
@@ -30,6 +30,6 @@ public class TaskActionRepository (TimeTrackerContext db) : IRepository<TaskActi
 
     public List<TaskAction> Where (Func<TaskAction, bool> predicate)
     {
-        return _db.TaskActions.Where(predicate).ToList();
+        return _db.TaskActions.Include(action => action.Type).Where(predicate).ToList();
     }
 }
