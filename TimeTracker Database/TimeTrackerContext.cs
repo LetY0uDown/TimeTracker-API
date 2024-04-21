@@ -51,7 +51,7 @@ public sealed partial class TimeTrackerContext : DbContext
             entity.ToTable("TaskAction");
 
             entity.Property(e => e.Id)
-                  .ValueGeneratedNever()
+                  .UseIdentityAlwaysColumn()
                   .HasColumnName("ID");
             entity.Property(e => e.TaskId).HasColumnName("TaskID");
             entity.Property(e => e.TypeId).HasColumnName("TypeID");

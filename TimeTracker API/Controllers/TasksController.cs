@@ -40,12 +40,16 @@ public sealed class TasksController (HubMessanger hub,
     public async Task<ActionResult> StartTask ([FromRoute] int id)
     {
         var action = await _actionsRepository.AddAsync(new TaskAction {
+            Id = 0,
             TaskId = id,
+            Task = null!,
+            Type = null,
             TypeId = TaskActionType.Kind.Start,
             CreatedAt = DateTime.Now.Ticks
         });
 
-        await _hub.TaskUpdatedAsync(action);
+        action = await _actionsRepository.GetByIDAsync(action.Id);
+        await _hub.TaskUpdatedAsync(action!);
 
         return Ok();
     }
@@ -59,7 +63,8 @@ public sealed class TasksController (HubMessanger hub,
             CreatedAt = DateTime.Now.Ticks
         });
 
-        await _hub.TaskUpdatedAsync(action);
+        action = await _actionsRepository.GetByIDAsync(action.Id);
+        await _hub.TaskUpdatedAsync(action!);
 
         return Ok();
     }
@@ -68,12 +73,16 @@ public sealed class TasksController (HubMessanger hub,
     public async Task<ActionResult> PauseTask ([FromRoute] int id)
     {
         var action = await _actionsRepository.AddAsync(new TaskAction {
+            Id = 0,
             TaskId = id,
+            Task = null!,
+            Type = null,
             TypeId = TaskActionType.Kind.Pause,
             CreatedAt = DateTime.Now.Ticks
         });
 
-        await _hub.TaskUpdatedAsync(action);
+        action = await _actionsRepository.GetByIDAsync(action.Id);
+        await _hub.TaskUpdatedAsync(action!);
 
         return Ok();
     }
@@ -95,7 +104,8 @@ public sealed class TasksController (HubMessanger hub,
             CreatedAt = DateTime.Now.Ticks
         });
 
-        await _hub.TaskUpdatedAsync(action);
+        action = await _actionsRepository.GetByIDAsync(action.Id);
+        await _hub.TaskUpdatedAsync(action!);
 
         return Ok();
     }

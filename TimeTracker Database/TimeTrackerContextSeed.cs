@@ -108,6 +108,13 @@ public sealed partial class TimeTrackerContext : DbContext
                     TaskId = 5,
                     TypeId = TaskActionType.Kind.Finish,
                     CreatedAt = new DateTime(2000, 10, 8, 16, 35, 0).Ticks
+                },
+
+                new TaskAction {
+                    Id = 7,
+                    TaskId = 1,
+                    TypeId = TaskActionType.Kind.Start,
+                    CreatedAt = new DateTime(2019, 5, 11, 21, 20, 0).Ticks
                 }
             ]);
         });
