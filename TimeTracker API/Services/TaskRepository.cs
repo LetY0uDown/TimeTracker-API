@@ -19,7 +19,9 @@ public class TaskRepository (TimeTrackerContext db) : IRepository<TrackedTask>
 
     public async Task<TrackedTask?> GetByIDAsync (int id)
     {
-        return await _db.Tasks.FirstOrDefaultAsync(task => task.Id == id);
+        return await _db.Tasks.Include(task => task.Actions)
+                              .ThenInclude(action => action.Type)
+                              .FirstOrDefaultAsync(task => task.Id == id);
     }
 
     public async Task UpdateAsync (TrackedTask entity)

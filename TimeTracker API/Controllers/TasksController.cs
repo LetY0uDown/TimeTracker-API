@@ -21,6 +21,12 @@ public sealed class TasksController (HubMessanger hub,
         return _taskRepository.Where(task => !task.IsDone).ToList();
     }
 
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<TrackedTask?>> GetTaskByID (int id)
+    {
+        return await _taskRepository.GetByIDAsync(id);
+    }
+
     [HttpGet("Done")]
     public ActionResult<List<TrackedTask>> GetFinishedTasks ()
     {
